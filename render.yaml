@@ -28,7 +28,6 @@ services:
   - type: web
     name: geminichat-ui
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
