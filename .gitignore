@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+env/
+*.db
+*.sqlite3
+
+# FastAPI / Uvicorn
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node / npm
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
