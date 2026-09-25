@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import engine, Base
@@ -39,3 +43,18 @@ app.include_router(chat.router)
 @app.get("/health", tags=["health"])
 def health():
     return {"status": "ok"}
+
+
+# Serve the production React build from the same Cloud Run container.
+frontend_index = Path(__file__).resolve().parents[2] / "frontend" / "dist" / "index.html"
+frontend_assets = frontend_index.parent / "assets"
+
+if frontend_assets.exists():
+    app.mount("/assets", StaticFiles(directory=frontend_assets), name="frontend-assets")
+
+
+@app.get("/{path:path}", include_in_schema=False)
+def frontend(path: str):
+    if frontend_index.exists():
+        return FileResponse(frontend_index)
+    return {"detail": "Frontend build not found."}

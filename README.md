@@ -55,9 +55,8 @@ This repository will be used to build and deploy a chatbot app where users can s
 - Build reusable design tokens (colors, spacing, typography) for consistent styling.
 
 ### 6) Deployment Plan
-- **Frontend deployment**: Vercel or Netlify.
-- **Backend deployment**: Render, Railway, or Fly.io for FastAPI.
-- **Database**: managed PostgreSQL (Neon/Supabase/Render Postgres).
+- **Deployment**: one Docker container on Google Cloud Run serving both React and FastAPI.
+- **Database**: managed PostgreSQL (Neon or Cloud SQL). SQLite is suitable only for local development because Cloud Run storage is ephemeral.
 - Configure production environment variables:
   - `GEMINI_API_KEY`
   - `JWT_SECRET`
@@ -66,6 +65,28 @@ This repository will be used to build and deploy a chatbot app where users can s
   - `GOOGLE_CLIENT_ID` (backend)
   - `VITE_GOOGLE_CLIENT_ID` (frontend, same Google OAuth web client ID)
 - Add CI checks (lint + tests) and auto-deploy from main branch.
+
+### Google Cloud Run Deployment
+
+From the repository root, set your project and deploy the image with Cloud Build:
+
+```powershell
+$PROJECT_ID = "your-google-cloud-project"
+$REGION = "us-central1"
+$REPOSITORY = "ai-chatbot"
+$SERVICE = "ai-chatbot"
+$IMAGE = "$REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$SERVICE"
+
+gcloud config set project $PROJECT_ID
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+gcloud artifacts repositories create $REPOSITORY --repository-format=docker --location=$REGION
+
+$GOOGLE_CLIENT_ID = "your-google-client-id"
+gcloud builds submit --config cloudbuild.yaml --substitutions="_VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,_IMAGE=$IMAGE"
+gcloud run deploy $SERVICE --image $IMAGE --region $REGION --allow-unauthenticated --set-env-vars="GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,GEMINI_API_KEY=your-gemini-key,JWT_SECRET=replace-with-a-long-random-secret,DATABASE_URL=your-postgres-url,CORS_ALLOWED_ORIGIN=*"
+```
+
+After deployment, copy the actual Cloud Run URL from the command output and add it as an authorized JavaScript origin in the Google OAuth Web Client settings. Keep `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID` set to the same value.
 
 ### 7) Delivery Milestones
 1. Initialize React + FastAPI apps and shared API contract.
