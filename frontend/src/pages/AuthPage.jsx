@@ -1,38 +1,59 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './AuthPage.css';
 
-export default function AuthPage({ mode }) {
-  const isLogin = mode === 'login';
-  const { login, signup } = useAuth();
+export default function AuthPage() {
+  const { googleLogin } = useAuth();
   const navigate = useNavigate();
-
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const buttonRef = useRef(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      if (isLogin) {
-        await login(email, password);
-      } else {
-        await signup(email, password);
-      }
-      navigate('/');
-    } catch (err) {
-      const msg =
-        err?.response?.data?.detail ||
-        (isLogin ? 'Login failed. Check your credentials.' : 'Signup failed. Try again.');
-      setError(typeof msg === 'string' ? msg : JSON.stringify(msg));
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let cancelled = false;
+    const renderGoogleButton = () => {
+      if (cancelled || !window.google || !buttonRef.current) return;
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: async ({ credential }) => {
+          setError('');
+          setLoading(true);
+          try {
+            await googleLogin(credential);
+            navigate('/');
+          } catch (err) {
+            const message = err?.response?.data?.detail || 'Google sign-in failed. Please try again.';
+            setError(typeof message === 'string' ? message : JSON.stringify(message));
+          } finally {
+            setLoading(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(buttonRef.current, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        width: 356,
+      });
+    };
+
+    if (window.google) {
+      renderGoogleButton();
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = renderGoogleButton;
+      document.head.appendChild(script);
     }
-  }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleLogin, navigate]);
 
   return (
     <div className="auth-root">
@@ -60,61 +81,12 @@ export default function AuthPage({ mode }) {
           <span className="logo-text">GeminiChat</span>
         </div>
 
-        <h1 className="auth-heading">
-          {isLogin ? 'Welcome back' : 'Create account'}
-        </h1>
-        <p className="auth-sub">
-          {isLogin
-            ? 'Sign in to continue chatting with Gemini AI'
-            : 'Start your AI-powered conversation journey'}
-        </p>
+        <h1 className="auth-heading">Welcome to GeminiChat</h1>
+        <p className="auth-sub">Continue with your Google account to start chatting with Gemini AI.</p>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              placeholder={isLogin ? 'Your password' : 'Min. 8 characters'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-            />
-          </div>
-
-          {error && <div className="auth-error">{error}</div>}
-
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? (
-              <span className="btn-spinner" />
-            ) : isLogin ? (
-              'Sign In'
-            ) : (
-              'Create Account'
-            )}
-          </button>
-        </form>
-
-        <p className="auth-switch">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <Link to={isLogin ? '/signup' : '/login'}>
-            {isLogin ? 'Sign up' : 'Sign in'}
-          </Link>
-        </p>
+        <div className="google-button" ref={buttonRef} />
+        {loading && <span className="btn-spinner" aria-label="Signing in" />}
+        {error && <div className="auth-error">{error}</div>}
       </div>
     </div>
   );

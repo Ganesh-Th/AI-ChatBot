@@ -1,18 +1,12 @@
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 # ── Auth schemas ──────────────────────────────────────────────────────────────
 
-class SignupRequest(BaseModel):
-    email: EmailStr
-    password: str  # min length enforced in route
-
-
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
+class GoogleLoginRequest(BaseModel):
+    credential: str
 
 
 class TokenResponse(BaseModel):

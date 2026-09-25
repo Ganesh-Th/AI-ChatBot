@@ -16,24 +16,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401, clear token and reload to force re-login
+// On 401, clear token and reload to force Google sign-in
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.href = '/auth';
     }
     return Promise.reject(err);
   }
 );
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
-export const signup = (email, password) =>
-  api.post('/auth/signup', { email, password }).then((r) => r.data);
-
-export const login = (email, password) =>
-  api.post('/auth/login', { email, password }).then((r) => r.data);
+export const googleLogin = (credential) =>
+  api.post('/auth/google', { credential }).then((r) => r.data);
 
 export const getMe = () =>
   api.get('/auth/me').then((r) => r.data);

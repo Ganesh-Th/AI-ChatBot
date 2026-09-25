@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # Gemini
     gemini_api_key: str = ""
 
+    # Google Identity Services
+    google_client_id: str = ""
+
     # CORS
     cors_allowed_origin: str = "http://localhost:5173"
 

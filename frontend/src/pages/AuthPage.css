@@ -107,6 +107,13 @@
   margin: 0 0 1.8rem;
 }
 
+.google-button {
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
 /* Form */
 .auth-form {
   display: flex;

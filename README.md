@@ -2,12 +2,12 @@
 
 ## Project Plan: Gemini Chatbot (React + Python)
 
-This repository will be used to build and deploy a chatbot app where users can sign in with email and chat with Gemini (send messages and receive responses).
+This repository will be used to build and deploy a chatbot app where users can sign in with Google and chat with Gemini (send messages and receive responses).
 
 ### 1) Scope and Functional Requirements
 - Build a **React frontend** for a unique chat experience.
 - Build a **Python backend** to securely call the Gemini API.
-- Support **email-based user authentication**.
+- Support **Google-based user authentication**.
 - Allow authenticated users to:
   - send prompts to Gemini,
   - receive and display Gemini responses,
@@ -18,13 +18,12 @@ This repository will be used to build and deploy a chatbot app where users can s
 - **Frontend (React)**
   - React + Vite (or Next.js React stack if SSR is needed later).
   - UI modules:
-    - Auth screens (email sign up / sign in),
+    - Google sign-in screen,
     - Chat workspace (message list, input composer, typing/stream states),
     - Profile/session controls.
 - **Backend (Python)**
   - FastAPI service with endpoints:
-    - `POST /auth/signup`
-    - `POST /auth/login`
+    - `POST /auth/google`
     - `POST /chat/send`
     - `GET /health`
   - Gemini integration through official Google Generative AI SDK.
@@ -33,10 +32,10 @@ This repository will be used to build and deploy a chatbot app where users can s
   - Start with SQLite for local dev; move to PostgreSQL for production.
   - Core tables: users, chats, messages, refresh_tokens (if used).
 
-### 3) Authentication Plan (Email-Based)
-- Use email + password authentication with secure password hashing (bcrypt/argon2).
-- Validate email format and enforce strong password rules.
-- Return signed JWT access token on successful login.
+### 3) Authentication Plan (Google-Based)
+- Verify Google Identity Services ID tokens on the backend.
+- Create or find the user by their verified Google email.
+- Return a signed JWT access token on successful Google sign-in.
 - Protect chat endpoints with auth middleware.
 - Add password reset flow in phase 2 (token + email provider integration).
 
@@ -64,6 +63,8 @@ This repository will be used to build and deploy a chatbot app where users can s
   - `JWT_SECRET`
   - `DATABASE_URL`
   - `CORS_ALLOWED_ORIGIN`
+  - `GOOGLE_CLIENT_ID` (backend)
+  - `VITE_GOOGLE_CLIENT_ID` (frontend, same Google OAuth web client ID)
 - Add CI checks (lint + tests) and auto-deploy from main branch.
 
 ### 7) Delivery Milestones

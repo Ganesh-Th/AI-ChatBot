@@ -19,6 +19,8 @@ services:
         generateValue: true   # Render auto-generates a random value
       - key: GEMINI_API_KEY
         sync: false           # You must set this manually in Render dashboard
+      - key: GOOGLE_CLIENT_ID
+        sync: false           # Google OAuth web client ID
       - key: CORS_ALLOWED_ORIGIN
         value: https://geminichat-ui.onrender.com   # Update after frontend deploy
 
@@ -42,6 +44,8 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://geminichat-api.onrender.com   # Update with your backend URL
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false           # Same Google OAuth web client ID as the backend
 
 # ── PostgreSQL database ───────────────────────────────────────────────────────
 databases:
